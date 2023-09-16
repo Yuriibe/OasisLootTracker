@@ -1,6 +1,6 @@
 from scapy.all import *
 from scapy.layers.inet import IP, TCP
-
+from ItemPriceApi import *
 all_ips = ["20.76.13", "20.76.14.27",
            "20.76.14", "45.223.19.187", "63.32.251.0", "52.30.70.249"]
 
@@ -28,8 +28,8 @@ def package_handler(package, messages):
         payload_raw = bytes(package[TCP].payload).hex()
         content = payload_raw
 
-        while '0b0100060c000101a' in content:
-            index = content.index("0b0100060c000101a")
+        while '0b0100060c000101' in content:
+            index = content.index("0b0100060c000101")
             content = content[index:]
             global last_package
             if last_package == 0:
@@ -48,12 +48,20 @@ def package_handler(package, messages):
 
             amount_dec = int(amount_hex, 16)  # Convert the hexadecimal string to a decimal number
             id_dec = int(reverse_id(id_hex), 16)  # Convert the hexadecimal string to a decimal number
-            print("Amount: " + str(amount_dec))
-            print("ID: " + str(id_dec))
-            print(content)
+            amount = amount_dec
+            item_id = id_dec
+            total_price = get_data(item_id) * amount
+            print("Amount: " + str(amount))
+            print("ID: " + str(item_id))
+            print("Price: " + str(total_price))
             print("\n")
-
             content = content[index + 2:]
 
+def get_data(item_id):
+    if get_market_price(item_id) is not None:
+        price = get_market_price(item_id)
+    else:
+        price = get_vendor_price(item_id)
 
+    return price
 sniff(filter="tcp", prn=lambda x: package_handler(x, []))
