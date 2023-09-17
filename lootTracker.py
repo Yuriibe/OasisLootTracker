@@ -1,6 +1,7 @@
 from scapy.all import *
 from scapy.layers.inet import IP, TCP
 from ItemPriceApi import *
+import dataManager
 all_ips = ["20.76.13", "20.76.14.27",
            "20.76.14", "45.223.19.187", "63.32.251.0", "52.30.70.249"]
 
@@ -28,8 +29,8 @@ def package_handler(package, messages):
         payload_raw = bytes(package[TCP].payload).hex()
         content = payload_raw
 
-        while '0b0100060c000101' in content:
-            index = content.index("0b0100060c000101")
+        while '0b010006' in content: #0b0100060c00010
+            index = content.index("0b010006")
             content = content[index:]
             global last_package
             if last_package == 0:
@@ -46,16 +47,19 @@ def package_handler(package, messages):
             amount_hex = content[60:64]
             id_hex = content[54:58]
 
-            amount_dec = int(amount_hex, 16)  # Convert the hexadecimal string to a decimal number
-            id_dec = int(reverse_id(id_hex), 16)  # Convert the hexadecimal string to a decimal number
-            amount = amount_dec
-            item_id = id_dec
-            total_price = get_data(item_id) * amount
+            amount = int(amount_hex, 16)  # Convert the hexadecimal string to a decimal number
+            item_id = int(reverse_id(id_hex), 16)  # Convert the hexadecimal string to a decimal number
+            total_price = int(get_data(item_id)) * int(amount)
+            dataManager.set_item_amount(amount)
+            dataManager.set_item_id(item_id)
+            dataManager.set_item_total_price(total_price)
             print("Amount: " + str(amount))
             print("ID: " + str(item_id))
             print("Price: " + str(total_price))
             print("\n")
+
             content = content[index + 2:]
+
 
 def get_data(item_id):
     if get_market_price(item_id) is not None:
@@ -64,4 +68,6 @@ def get_data(item_id):
         price = get_vendor_price(item_id)
 
     return price
-sniff(filter="tcp", prn=lambda x: package_handler(x, []))
+
+def start_packet_sniffer():
+    sniff(filter="tcp", prn=lambda x: package_handler(x, []))

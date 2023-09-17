@@ -1,9 +1,7 @@
-from flask import Flask, jsonify
 import requests
 from lxml import html
 import re
 
-app = Flask(__name__)
 def get_market_price(item_id):
     url = "https://eu-trade.naeu.playblackdesert.com/Trademarket/GetMarketPriceInfo"
     headers = {
