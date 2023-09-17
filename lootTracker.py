@@ -1,13 +1,18 @@
 from scapy.all import *
 from scapy.layers.inet import IP, TCP
-from ItemPriceApi import *
+from itemApi import *
 import dataManager
+import itemLogger
+
 all_ips = ["20.76.13", "20.76.14.27",
            "20.76.14", "45.223.19.187", "63.32.251.0", "52.30.70.249"]
 
 last_package = 0
 
 last_position = [0, 0]
+value2 = 0
+total_amount = 0
+
 
 def reverse_id(id_hex):
     part1 = id_hex[:2]
@@ -26,10 +31,12 @@ def package_handler(package, messages):
 
         if not hasattr(package[TCP].payload, "load"):
             return
+
+        print(package[TCP].payload)
         payload_raw = bytes(package[TCP].payload).hex()
         content = payload_raw
 
-        while '0b010006' in content: #0b0100060c00010
+        while '0b010006' in content:  # 0b0100060c00010
             index = content.index("0b010006")
             content = content[index:]
             global last_package
@@ -47,12 +54,16 @@ def package_handler(package, messages):
             amount_hex = content[60:64]
             id_hex = content[54:58]
 
-            amount = int(amount_hex, 16)  # Convert the hexadecimal string to a decimal number
-            item_id = int(reverse_id(id_hex), 16)  # Convert the hexadecimal string to a decimal number
-            total_price = int(get_data(item_id)) * int(amount)
-            dataManager.set_item_amount(amount)
+            item_id = int(reverse_id(id_hex), 16)
+            amount = int(amount_hex, 16)
+
+            total_price = int(get_price(item_id)) * int(amount)
+            item_name = str(get_item_name(item_id))
             dataManager.set_item_id(item_id)
+            dataManager.set_item_name(item_name)
+            dataManager.set_item_amount(amount)
             dataManager.set_item_total_price(total_price)
+            itemLogger.log_items()
             print("Amount: " + str(amount))
             print("ID: " + str(item_id))
             print("Price: " + str(total_price))
@@ -61,13 +72,17 @@ def package_handler(package, messages):
             content = content[index + 2:]
 
 
-def get_data(item_id):
+
+def get_price(item_id):
     if get_market_price(item_id) is not None:
         price = get_market_price(item_id)
     else:
         price = get_vendor_price(item_id)
-
     return price
+
 
 def start_packet_sniffer():
     sniff(filter="tcp", prn=lambda x: package_handler(x, []))
+
+
+start_packet_sniffer()

@@ -4,6 +4,8 @@ from PyQt5.QtCore import Qt, QTimer
 import dataManager
 from lootTracker import start_packet_sniffer
 import threading
+import itemLogger
+
 
 
 class Overlay(QWidget):
@@ -24,38 +26,50 @@ class Overlay(QWidget):
 
         # Create a QLabel widget
         self.item_id_label = QLabel("", self)
-        self.item_id_label.setGeometry(10, 10, 200, 30)  # Set label position and size
+        self.item_id_label.setGeometry(10, 10, 400, 30)  # Set label position and size
         self.item_id_label.setStyleSheet('font-size: 20px; color: black;')
 
+        self.item_name_label = QLabel("", self)
+        self.item_name_label.setGeometry(10, 60, 400, 30)  # Set label position and size
+        self.item_name_label.setStyleSheet('font-size: 20px; color: black;')
+
         self.item_amount_label = QLabel("", self)
-        self.item_amount_label.setGeometry(10, 60, 200, 30)  # Set label position and size
+        self.item_amount_label.setGeometry(10, 110, 400, 30)  # Set label position and size
         self.item_amount_label.setStyleSheet('font-size: 20px; color: black;')
 
         self.item_total_price_label = QLabel("", self)
-        self.item_total_price_label.setGeometry(10, 110, 400, 30)  # Set label position and size
+        self.item_total_price_label.setGeometry(10, 160, 400, 30)  # Set label position and size
         self.item_total_price_label.setStyleSheet('font-size: 20px; color: black;')
+
+        self.item_total_profit_label = QLabel("", self)
+        self.item_total_profit_label.setGeometry(10, 210, 400, 30)  # Set label position and size
+        self.item_total_profit_label.setStyleSheet('font-size: 20px; color: black;')
 
         # Create a timer to periodically update the item ID label
         self.timer = QTimer(self)
-        self.timer.timeout.connect(self.update_item_id_label)
-        self.timer.timeout.connect(self.update_item_amount_label)
-        self.timer.timeout.connect(self.update_item_total_price_label)
+        self.timer.timeout.connect(self.update_labels)
         self.timer.start(100)  # Update every 1000 milliseconds (1 second)
 
-    def update_item_id_label(self):
+    def update_labels(self):
         # Update the item ID label with the latest item ID
         item_id = dataManager.get_item_id()
         self.item_id_label.setText(f'Item ID: {item_id}')
 
-    def update_item_amount_label(self):
-        # Update the item ID label with the latest item ID
+        # Update the item amount label with the latest item amount
         item_amount = dataManager.get_item_amount()
         self.item_amount_label.setText(f'Amount: {item_amount}')
 
-    def update_item_total_price_label(self):
-        # Update the item ID label with the latest item ID
+        # Update the item total price label with the latest total price
         item_total_price = dataManager.get_item_total_price()
         self.item_total_price_label.setText(f'Total Price: {item_total_price}')
+
+        # Update the item name label with the latest item name
+        item_name = dataManager.get_item_name()
+        self.item_name_label.setText(f'Item Name: {item_name}')
+
+       # total_profit = itemLogger.calculate_profit()
+        #self.item_total_profit_label.setText(f'Total Profit: {total_profit}')
+
 
 
 if __name__ == '__main__':

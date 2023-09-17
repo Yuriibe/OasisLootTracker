@@ -28,7 +28,6 @@ def get_market_price(item_id):
     else:
         return None
 
-
 def get_vendor_price(item_id):
     url = 'https://bdocodex.com/us/item/' + str(item_id) + '/'
     response = requests.get(url)
@@ -47,5 +46,17 @@ def get_vendor_price(item_id):
             return sell_price
         else:
             return 1
+
+def get_item_name(item_id):
+    url = 'https://bdocodex.com/us/item/' + str(item_id) + '/'
+    response = requests.get(url)
+    html_content = response.text
+    tree = html.fromstring(html_content)
+    xpath_query_item_name = '/html/body/div/div[1]/div[3]/div[1]/div[1]/div[1]/b'
+    results_item_name = tree.xpath(xpath_query_item_name)
+    for result_item_name in results_item_name:
+        text_from_result = result_item_name.text_content()
+        return text_from_result
+
 
 

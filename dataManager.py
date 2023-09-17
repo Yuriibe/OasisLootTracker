@@ -1,4 +1,5 @@
 item_id = None
+item_name = None
 item_amount = None
 item_total_price = None
 
@@ -10,6 +11,14 @@ def set_item_id(new_id):
 
 def get_item_id():
     return item_id
+
+def set_item_name(new_name):
+    global item_name
+    item_name = new_name
+
+
+def get_item_name():
+    return item_name
 
 
 def set_item_amount(new_amount):
