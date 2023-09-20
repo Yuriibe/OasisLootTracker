@@ -1,4 +1,3 @@
-import re
 from scapy.all import *
 from scapy.layers.inet import IP, TCP
 from itemApi import *
@@ -41,13 +40,13 @@ def package_handler(package, messages):
 
         payload_raw = bytes(package[TCP].payload).hex()
         content = last_payload + payload_raw
-        if "0b010006" in content:
-            print("payload: ", content)
-        position = 0
 
+        position = 0
+        matches = list(re.finditer('0b0100db1b', content))
+        print(matches)
         while len(content[position:]) >= 500:
+            payload_raw = payload_raw[position:]
             position = 0
-            matches = list(re.finditer('0b010006', content))
 
             if len(matches) == 0:
                 return  # no match found, return - could cause issue if the identifier is split between two packages
@@ -63,7 +62,7 @@ def package_handler(package, messages):
                     match_location = matches[1].start()
                     # print("Match 3")
 
-            identifier_length = len('0b010006')
+            identifier_length = len('0b0100db1b')
             content = content[match_location + identifier_length:]
 
             global last_package
@@ -83,9 +82,8 @@ def package_handler(package, messages):
                 # print(content)
                 # print(match_location)
 
-            amount_hex = content[52:56]
-            # id_hex = content[54:58]
-            id_hex = content[46:50]
+            amount_hex = content[60:64]
+            id_hex = content[54:58]
             item_id = int(reverse_id(id_hex), 16)
             amount = int(amount_hex, 16)
             total_price = int(get_price(item_id)) * int(amount)

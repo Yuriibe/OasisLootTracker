@@ -32,12 +32,12 @@ def package_handler(package, messages):
         if not hasattr(package[TCP].payload, "load"):
             return
 
-        print(package[TCP].payload)
         payload_raw = bytes(package[TCP].payload).hex()
         content = payload_raw
 
-        while '0b010006' in content:  # 0b0100060c00010
-            index = content.index("0b010006")
+        while '0b0100db1b' in content:  # 0b0100060c00010
+            print(payload_raw)
+            index = content.index("0b0100db1b")
             content = content[index:]
             global last_package
             if last_package == 0:
